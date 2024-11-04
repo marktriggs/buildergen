@@ -52,7 +52,7 @@ public class BuilderGen extends AbstractProcessor {
             code.append(String.format("    return new %s%d();\n", builderName, level));
             code.append(String.format("  };\n\n"));
 
-            code.append(String.format("  protected class %s%d {\n", builderName, level));
+            code.append(String.format("  public class %s%d {\n", builderName, level));
             level++;
         }
 
