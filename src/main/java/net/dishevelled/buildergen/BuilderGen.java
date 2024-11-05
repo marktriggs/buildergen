@@ -112,13 +112,11 @@ public class BuilderGen extends AbstractProcessor {
     public void handleRecords(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element element : roundEnv.getElementsAnnotatedWith(RecordBuilder.class)) {
             if (element.getKind() == ElementKind.RECORD) {
+                String builderName = element.getAnnotation(RecordBuilder.class).name();
+
                 TypeElement recordElement = (TypeElement) element;
 
                 PackageAndSuffix packageAndSuffix = findPackageAndSuffix(recordElement.getEnclosingElement());
-
-                String recordName = recordElement.getSimpleName().toString();
-
-                String builderName = recordName + "Builder" + packageAndSuffix.builderSuffix();
 
                 StringBuilder code = generateCode(packageAndSuffix.packageName(), builderName, recordElement.getQualifiedName().toString(),
                                                   recordElement.getEnclosedElements().stream().filter(e -> e.getKind() == ElementKind.FIELD).collect(Collectors.toList()));
@@ -140,15 +138,13 @@ public class BuilderGen extends AbstractProcessor {
     public void handleInstances(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element element : roundEnv.getElementsAnnotatedWith(InstanceBuilder.class)) {
             if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                String builderName = element.getAnnotation(InstanceBuilder.class).name();
+
                 ExecutableElement constructorElement = (javax.lang.model.element.ExecutableElement) element;
 
                 TypeElement classElement = (TypeElement)constructorElement.getEnclosingElement();
 
                 PackageAndSuffix packageAndSuffix = findPackageAndSuffix(classElement.getEnclosingElement());
-
-                String className = classElement.getSimpleName().toString();
-
-                String builderName = className + "Builder" + packageAndSuffix.builderSuffix();
 
                 StringBuilder code = generateCode(packageAndSuffix.packageName(), builderName, classElement.getQualifiedName().toString(),
                                                   constructorElement.getParameters().stream().collect(Collectors.toList()));

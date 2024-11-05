@@ -1,3 +1,5 @@
 package net.dishevelled.buildergen;
 
-public @interface InstanceBuilder {}
+public @interface InstanceBuilder {
+    String name();
+}

@@ -1,3 +1,5 @@
 package net.dishevelled.buildergen;
 
-public @interface RecordBuilder {}
+public @interface RecordBuilder {
+    String name();
+}
