@@ -45,41 +45,60 @@ public class BuilderGen extends AbstractProcessor {
             String fieldName = enclosed.getSimpleName().toString();
             String fieldType = enclosed.asType().toString();
 
-            code.append(String.format("  protected %s %s;\n", fieldType, fieldName));
-
-            code.append(String.format("  public %s%d set%s(%s %s) {\n", builderName, level, upcase(fieldName), fieldType, fieldName));
-            code.append(String.format("    this.%s = %s;\n", fieldName, fieldName));
-            code.append(String.format("    return new %s%d();\n", builderName, level));
-            code.append(String.format("  };\n\n"));
-
-            code.append(String.format("  public class %s%d {\n", builderName, level));
-            level++;
+            code.append(String.format("  public %s %s;\n", fieldType, fieldName));
         }
 
-        code.append(String.format("  public %s build() {\n", targetTypeQualifiedName));
-        code.append(String.format("    return new %s(", targetTypeQualifiedName));
+        for (int memberIdx = 0; memberIdx <= members.size(); memberIdx++) {
 
-        int argCount = 0;
-        for (Element enclosed : members) {
-            argCount++;
-            String fieldName = enclosed.getSimpleName().toString();
+            if (memberIdx > 0) {
+                code.append(String.format("  public class %s%d {\n", builderName, memberIdx));
 
-            code.append(String.format("%s,", fieldName));
+                code.append(String.format("    private %s __builder;\n", builderName));
+
+                code.append(String.format("    public %s%d(%s __builder) { this.__builder = __builder; }\n",
+                                          builderName, memberIdx, builderName));
+            } else {
+                code.append(String.format("    private %s __builder = this;\n", builderName));
+            }
+
+            if (memberIdx < members.size()) {
+                String fieldName = members.get(memberIdx).getSimpleName().toString();
+                String fieldType = members.get(memberIdx).asType().toString();
+
+                code.append(String.format("  public %s%d set%s(%s %s) {\n", builderName, memberIdx + 1, upcase(fieldName), fieldType, fieldName));
+                code.append(String.format("    this.__builder.%s = %s;\n", fieldName, fieldName));
+                code.append(String.format("    return new %s%d(this.__builder);\n", builderName, memberIdx + 1));
+                code.append(String.format("  };\n\n"));
+            } else {
+                code.append(String.format("  public %s build() {\n", targetTypeQualifiedName));
+                code.append(String.format("    return new %s(", targetTypeQualifiedName));
+                int argCount = 0;
+                for (Element enclosed : members) {
+                    argCount++;
+                    String fieldName = enclosed.getSimpleName().toString();
+
+                    code.append(String.format("this.__builder.%s,", fieldName));
+                }
+
+                // Drop the last comma
+                if (argCount > 0) {
+                    code.deleteCharAt(code.length() - 1);
+                }
+
+                code.append(String.format(");\n"));
+                code.append(String.format("}\n"));
+
+                for (int i = 0; i < level; i++) {
+                    code.append("}\n");
+                }
+
+                code.append("}\n");
+            }
+
+            if (memberIdx > 0) {
+                code.append("  }\n");
+            }
         }
-
-        // Drop the last comma
-        if (argCount > 0) {
-            code.deleteCharAt(code.length() - 1);
-        }
-
-        code.append(String.format(");\n"));
-        code.append(String.format("}\n"));
-
-        for (int i = 0; i < level; i++) {
-            code.append("}\n");
-        }
-
-        code.append("}\n");
 
         return code;
     }
